@@ -1,207 +1,151 @@
-# Mind Protocol
+# MindProtocol
 
-Mind Protocol is a TypeScript-first project focused on building a reliable, maintainable, and contributor-friendly foundation for protocol development and experimentation.
+A daily 15-minute mental-reset journaling app for college students and early-career professionals. Guided AI-powered sessions help you check in with yourself, name what you're feeling, and leave with a small shift.
 
-This README is written to help both users and contributors get productive quickly.
+**1st Runner-Up at HackFusion 2026.** Designed with trauma-informed UX principles. Private by default — all data stays on your device.
 
----
+## Features
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Available Scripts](#available-scripts)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [Development Guidelines](#development-guidelines)
-- [Issue & PR Guidelines](#issue--pr-guidelines)
-- [License](#license)
-
----
-
-## Overview
-
-The goal of **Mind Protocol** is to provide a clean and extensible codebase that makes it easy to:
-
-- implement protocol-related logic,
-- iterate quickly with confidence,
-- and collaborate through a standard GitHub workflow.
-
-Whether you want to use the project, improve it, or propose new ideas, this repository is structured to support contributions of all sizes.
-
----
+- **Guided Daily Sessions** — Structured 5-step flow: mood sliders, diagnostic conversation, journaling prompts, post-session sliders, and reflection
+- **AI-Powered Prompts** — Groq-hosted LLM generates personalized journaling prompts based on your responses
+- **Crisis Detection** — Dual-layer safety: local keyword matching + LLM classifier with Nepal-specific hotlines and therapist directory
+- **Voice Input** — Speech-to-text via Web Speech API (web) and `@react-native-voice/voice` (native)
+- **Ambient Audio** — 4 bundled lo-fi tracks with play/pause toggle during journaling
+- **Insights Dashboard** — Daily, weekly, and monthly trend views with streak tracking
+- **Cross-Platform** — iOS, Android, and Web via Expo
 
 ## Tech Stack
 
-Based on the repository language composition:
-
-- **TypeScript** (~99.9%)
-- **JavaScript** (~0.1%)
-
----
+| Layer | Technology |
+|---|---|
+| Framework | Expo ~57, React Native 0.86, React 19 |
+| Language | TypeScript 6.0 |
+| Routing | Expo Router (file-based) |
+| State | Zustand |
+| Storage | expo-sqlite (native), localStorage (web) |
+| AI | Groq API (`llama-3.3-70b-versatile`, `llama-3.1-8b-instant`) |
+| HTTP | Axios |
+| Audio | expo-av |
+| Voice | @react-native-voice/voice, Web Speech API |
+| Notifications | expo-notifications (local daily) |
+| Animations | react-native-reanimated, react-native-gesture-handler |
 
 ## Project Structure
 
-> This is a general layout. Update if your current folders differ.
-
 ```text
-Mind-Protocol/
-├── src/                # Main source code
-├── tests/              # Unit/integration tests
-├── docs/               # Additional documentation
-├── scripts/            # Utility/build scripts
-├── .github/            # GitHub Actions and templates
-├── package.json
-├── tsconfig.json
-└── README.md
+MindProtocol/
+├── app/                          # Expo application
+│   ├── constants/
+│   │   ├── theme.ts              # Colors, spacing, shadows, fonts
+│   │   └── systemPrompt.ts       # AI prompts (journaling, crisis, follow-up, reflection)
+│   ├── data/
+│   │   └── therapists.ts         # Nepal-based therapist directory
+│   ├── lib/
+│   │   ├── db.ts                 # Database entry point
+│   │   ├── db.native.ts          # SQLite layer (iOS/Android)
+│   │   ├── db.web.ts             # localStorage fallback
+│   │   ├── groq.ts               # Groq API integration
+│   │   ├── notifications.ts      # Local push notification scheduling
+│   │   └── useVoiceInput.ts      # Cross-platform speech-to-text hook
+│   ├── stores/
+│   │   ├── userStore.ts          # User profile state
+│   │   └── sessionStore.ts       # Current session state
+│   └── app/                      # Expo Router screens
+│       ├── _layout.tsx           # Root layout (DB init, auth, notifications)
+│       ├── index.tsx             # Entry: onboarding or tabs
+│       ├── onboarding.tsx        # 3-step onboarding flow
+│       ├── session-time.tsx      # Daily reminder time picker
+│       ├── crisis.tsx            # Crisis resources screen
+│       └── (tabs)/
+│           ├── index.tsx         # Home — "Start today's session"
+│           ├── session.tsx       # Full session flow (5 steps)
+│           └── dashboard.tsx     # Insights dashboard
+├── logo/                         # Branding assets
+├── audio/                        # Ambient audio tracks
+└── uidessign.md                  # UI/UX design rationale
 ```
-
----
 
 ## Getting Started
 
 ### Prerequisites
 
-Install the following first:
-
-- [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/) (LTS recommended)
-- npm (comes with Node.js)
+- Node.js 18+
+- Expo CLI (`npm install -g expo-cli`)
+- For iOS: Xcode + CocoaPods
+- For Android: Android Studio + SDK
+- For Web: modern browser (Chrome/Edge for voice input)
 
 ### Installation
 
 ```bash
-git clone https://github.com/altafKhan-nep/Mind-Protocol.git
-cd Mind-Protocol
+git clone git@github.com:sujandhakal0/MindProtocol.git
+cd MindProtocol/app
 npm install
 ```
 
-### Run Locally
+### Environment Variables
+
+Create `app/.env` with your Groq API key:
+
+```env
+EXPO_PUBLIC_GROQ_API_KEY=gsk_your_key_here
+```
+
+Get a free API key at [console.groq.com](https://console.groq.com).
+
+### Run
 
 ```bash
-npm run dev
+# From the app/ directory
+npm start          # Expo dev server (QR code)
+npm run ios        # iOS simulator
+npm run android    # Android emulator
+npm run web        # Browser
 ```
 
-### Build Project
+## How It Works
 
-```bash
-npm run build
-```
+### Session Flow
 
-### Run Tests
+1. **Pre-Session Sliders** — Rate mood, mental noise, focus, and energy (0–100)
+2. **Diagnostic Conversation** — Answer 4 progressive deepening questions with AI follow-ups
+3. **Journaling** — Write through 3 AI-generated prompts (Externalize → Name → Reframe)
+4. **Post-Session Sliders** — Re-rate the same metrics
+5. **Completion** — View your shift and receive an AI-generated reflection
 
-```bash
-npm test
-```
+### AI Architecture
 
----
+| Prompt | Model | Purpose |
+|---|---|---|
+| Journaling Prompts | `llama-3.3-70b-versatile` | Generate 3 progressive writing prompts |
+| Crisis Check | `llama-3.1-8b-instant` | Binary SAFE/CRISIS classifier |
+| Follow-up Questions | `llama-3.1-8b-instant` | Adaptive diagnostic deepening |
+| Session Reflection | `llama-3.1-8b-instant` | Post-session summary sentence |
 
-## Available Scripts
+### Safety
 
-Common scripts you can expose in `package.json`:
+- **Local keyword detection** runs instantly without network for suicidal ideation, self-harm, hopelessness, and violence keywords
+- **LLM classifier** catches ambiguous distress the keywords miss
+- **Crisis screen** shows Nepal-specific hotlines (Samaritans Nepal, TPO Nepal, Mental Health Nepal) and 5 therapist listings with contact info and pricing
+- No gamification, no social features, no performance pressure
 
-- `npm run dev` → start local development
-- `npm run build` → create production build
-- `npm run test` → run tests
-- `npm run lint` → run lint checks
-- `npm run format` → format code
+### Data
 
-> If script names differ in this repo, run `npm run` to see the exact list.
+- **iOS/Android**: SQLite database (`mindprotocol.db`) with tables for user profile, sessions, and streaks
+- **Web**: localStorage with identical API
+- **Nothing leaves the device** — all AI calls are stateless (no user data sent to Groq beyond the current message)
 
----
+## Design Principles
 
-## Usage
-
-After installation, use the available scripts to develop, test, and validate changes.
-
-Typical workflow:
-
-1. Pull latest changes
-2. Create feature/fix branch
-3. Implement and test locally
-4. Open PR with clear description
-
----
-
-## Contributing
-
-Contributions are welcome and appreciated.
-
-### Quick Contribution Flow
-
-1. Fork the repository
-2. Clone your fork
-3. Create a new branch:
-
-```bash
-git checkout -b feat/your-feature-name
-```
-
-4. Make your changes
-5. Run checks:
-
-```bash
-npm run lint
-npm test
-```
-
-6. Commit with clear message
-7. Push and open a Pull Request
-
----
-
-## Development Guidelines
-
-To keep the codebase healthy and easy to maintain:
-
-- Prefer **TypeScript** for new code
-- Keep modules focused and small
-- Add or update tests for behavior changes
-- Avoid unrelated refactors in the same PR
-- Document non-obvious logic with concise comments
-
-### Commit Message Suggestions
-
-Use conventional prefixes:
-
-- `feat:` new feature
-- `fix:` bug fix
-- `docs:` documentation updates
-- `refactor:` internal cleanup
-- `test:` tests added/updated
-- `chore:` maintenance tasks
-
-Example:
-
-```text
-feat: add protocol message validation middleware
-```
-
----
-
-## Issue & PR Guidelines
-
-### Before Opening an Issue
-
-- Check if a similar issue already exists
-- Provide reproduction steps (for bugs)
-- Include expected vs actual behavior
-
-### Before Opening a PR
-
-- Ensure branch is up to date
-- Keep PR focused on one topic
-- Add context: what changed and why
-- Link related issue (e.g., `Closes #12`)
-
----
+- **Trauma-informed** — No guilt copy for missed days, no visible word counts or timers, reduced-motion-safe
+- **One action per screen** — Minimized cognitive load throughout
+- **WCAG 2.2 AA** — 4.5:1 contrast ratios, 44x44pt tap targets, screen reader support
+- **Desaturated palette** — Calming teal/blue primary with a single warm accent for CTAs
 
 ## License
 
-Please add the project license in a `LICENSE` file (e.g., MIT) and update this section accordingly.
+MIT — see [app/LICENSE](app/LICENSE)
 
----
+## Author
 
-If this project helps you, consider giving it a ⭐ and contributing improvements.
+Sujan Dhakal
