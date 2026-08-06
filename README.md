@@ -184,6 +184,8 @@ MIT — see [app/LICENSE](app/LICENSE)
 ---
 
 ## Author
-
+**Hack Fusion Project Made My team** 
 **Altaf Khan**  
-GitHub: [@altafKhan-nep](https://github.com/altafKhan-nep)
+**Sujan Dhakal**  
+**Danish Ekbal Ahmad**  
+**Ujjwal Pyakhurel**  
