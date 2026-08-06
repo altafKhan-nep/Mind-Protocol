@@ -148,4 +148,9 @@ MIT — see [app/LICENSE](app/LICENSE)
 
 ## Author
 
-Sujan Dhakal
+Built by Team MindProtocol at HackFusion 2026.
+
+Mohammad Altaf Khan (@altafKhan-nep)
+Sujan Dhakal (@github-@sujandhakal0)
+Danish Ekbal Ahmad 
+Ujjwal Pyakhurel 
